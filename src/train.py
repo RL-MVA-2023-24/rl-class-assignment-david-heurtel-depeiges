@@ -243,7 +243,7 @@ agent = DQN_Agent(config, model)
 class ProjectAgent:
     def __init__(self):
         self.dqn_agent = DQN_Agent(config, model)
-        self.path = config['path']
+        self.path = config['save_path']
     def act(self, observation, use_random=False):
         return self.dqn_agent.act(observation)
 
