@@ -218,26 +218,26 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 state_dim = env.observation_space.shape[0]
 nb_actions = env.action_space.n
 
-model = MLP(state_dim, 128, nb_actions, depth=3, activation=torch.nn.SiLU(), normalization='layer').to(device)
+model = MLP(state_dim, 256, nb_actions, depth=4, activation=torch.nn.SiLU(), normalization='layer').to(device)
 
 config = {'nb_actions': nb_actions,
-        'learning_rate': 0.0001,
-        'gamma': 0.95,
+        'learning_rate': 0.001,
+        'gamma': 0.97,
         'buffer_size': 1000000,
         'epsilon_min': 0.01,
         'epsilon_max': 1.,
-        'epsilon_decay_period': 100,
-        'epsilon_delay_decay': 20,
-        'batch_size': 256,
-        'gradient_steps': 10,
+        'epsilon_decay_period': 20000,
+        'epsilon_delay_decay': 400,
+        'batch_size': 512,
+        'gradient_steps': 4,
         'update_target_strategy': 'replace', # or 'ema'
-        'update_target_freq': 50,
+        'update_target_freq': 300,
         'update_target_tau': 0.005,
         'criterion': torch.nn.SmoothL1Loss(),
         'monitoring_nb_trials': 10, 
         'monitor_every': 50, 
         'save_path': './dqn_agent.pth',
-        'save_every': 100}
+        'save_every': 50}
 
 agent = DQN_Agent(config, model)
 
