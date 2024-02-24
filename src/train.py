@@ -241,7 +241,7 @@ config = {'nb_actions': nb_actions,
 agent = DQN_Agent(config, model)
 
 class ProjectAgent:
-    def __init__(self, config):
+    def __init__(self):
         self.dqn_agent = DQN_Agent(config, model)
         self.path = config['path']
     def act(self, observation, use_random=False):
