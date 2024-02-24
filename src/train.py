@@ -217,7 +217,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 state_dim = env.observation_space.shape[0]
 nb_actions = env.action_space.n
 
-model = MLP(state_dim, 256, nb_actions, depth=4, activation=torch.nn.SiLU(), normalization='layer').to(device)
+model = MLP(state_dim, 128, nb_actions, depth=3, activation=torch.nn.SiLU(), normalization='layer').to(device)
 
 config = {'nb_actions': nb_actions,
         'learning_rate': 0.0001,
