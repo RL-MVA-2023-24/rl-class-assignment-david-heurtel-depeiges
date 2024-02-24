@@ -88,7 +88,7 @@ class DQN_Agent:
         self.update_target_tau = config['update_target_tau'] if 'update_target_tau' in config.keys() else 0.005
         self.monitoring_nb_trials = config['monitoring_nb_trials'] if 'monitoring_nb_trials' in config.keys() else 0
         self.monitor_every = config['monitor_every'] if 'monitor_every' in config.keys() else 10
-        self.save_path = config['save_path'] if 'save_path' in config.keys() else '../ckpt/agent.pth'
+        self.save_path = config['save_path'] if 'save_path' in config.keys() else './agent.pth'
         self.save_every = config['save_every'] if 'save_every' in config.keys() else 100
 
     def MC_eval(self, env, nb_trials):   # NEW NEW NEW
@@ -235,7 +235,7 @@ config = {'nb_actions': nb_actions,
         'criterion': torch.nn.SmoothL1Loss(),
         'monitoring_nb_trials': 10, 
         'monitor_every': 50, 
-        'save_path': '../ckpt/dqn_agent.pth',
+        'save_path': './dqn_agent.pth',
         'save_every': 100}
 
 agent = DQN_Agent(config, model)
@@ -266,5 +266,5 @@ if __name__ == "__main__":
     # Set the device
 
     ep_length, disc_rewards, tot_rewards, V0 = agent.train(env, 1000)
-    agent.save("../ckpt/dqn_agent.pth")
+    agent.save("./dqn_agent.pth")
     print("Training done")
