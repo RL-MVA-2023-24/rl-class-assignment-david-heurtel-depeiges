@@ -4,6 +4,7 @@ import torch
 import random
 import numpy as np
 from copy import deepcopy
+import os
 
 env = TimeLimit(
     env=HIVPatient(domain_randomization=False), max_episode_steps=200
@@ -243,7 +244,6 @@ agent = DQN_Agent(config, model)
 class ProjectAgent:
     def __init__(self):
         self.dqn_agent = DQN_Agent(config, model)
-        self.path = config['save_path']
     def act(self, observation, use_random=False):
         return self.dqn_agent.act(observation)
 
@@ -251,7 +251,8 @@ class ProjectAgent:
         pass
 
     def load(self):
-        self.dqn_agent.load(self.path)
+        path = os.getcwd() + "/src/dqn_agent.pth"
+        self.dqn_agent.load(path)
 
 
 if __name__ == "__main__":
