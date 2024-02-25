@@ -183,18 +183,18 @@ class DQN_Agent:
                     episode_return.append(episode_cum_reward)   # NEW NEW NEW
                     print("Episode ", '{:2d}'.format(episode), 
                           ", epsilon ", '{:6.2f}'.format(epsilon), 
-                          ", batch size ", '{:4d}'.format(len(self.memory)), 
-                          ", ep return ", '{:4.1f}'.format(episode_cum_reward), 
-                          ", MC tot ", '{:6.2f}'.format(MC_tr),
-                          ", MC disc ", '{:6.2f}'.format(MC_dr),
-                          ", V0 ", '{:6.2f}'.format(V0),
+                          ", memory size ", '{:4d}'.format(len(self.memory)), 
+                          ", ep return ", '{:6.0f}'.format(episode_cum_reward), 
+                          ", MC tot ", '{:6.0f}'.format(MC_tr),
+                          ", MC disc ", '{:6.0f}'.format(MC_dr),
+                          ", V0 ", '{:6.0f}'.format(V0),
                           sep='')
                 else:
                     episode_return.append(episode_cum_reward)
                     print("Episode ", '{:2d}'.format(episode), 
                           ", epsilon ", '{:6.2f}'.format(epsilon), 
-                          ", batch size ", '{:4d}'.format(len(self.memory)), 
-                          ", ep return ", '{:4.1f}'.format(episode_cum_reward), 
+                          ", memory size ", '{:4d}'.format(len(self.memory)), 
+                          ", ep return ", '{:6.0f}'.format(episode_cum_reward), 
                           sep='')
 
                 
@@ -211,6 +211,7 @@ class DQN_Agent:
         torch.save(self.model.state_dict(), path)
     def load(self, path):
         self.model.load_state_dict(torch.load(path,map_location=device))
+        self.model.eval()
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -218,20 +219,20 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 state_dim = env.observation_space.shape[0]
 nb_actions = env.action_space.n
 
-model = MLP(state_dim, 256, nb_actions, depth=4, activation=torch.nn.SiLU(), normalization='layer').to(device)
+model = MLP(state_dim, 256, nb_actions, depth=5, activation=torch.nn.SiLU(), normalization='None').to(device)
 
 config = {'nb_actions': nb_actions,
         'learning_rate': 0.001,
-        'gamma': 0.97,
+        'gamma': 0.98,
         'buffer_size': 1000000,
         'epsilon_min': 0.01,
         'epsilon_max': 1.,
-        'epsilon_decay_period': 20000,
+        'epsilon_decay_period': 10000,
         'epsilon_delay_decay': 400,
-        'batch_size': 512,
-        'gradient_steps': 4,
+        'batch_size': 1024,
+        'gradient_steps': 2,
         'update_target_strategy': 'replace', # or 'ema'
-        'update_target_freq': 300,
+        'update_target_freq': 500,
         'update_target_tau': 0.005,
         'criterion': torch.nn.SmoothL1Loss(),
         'monitoring_nb_trials': 10, 
@@ -266,6 +267,6 @@ if __name__ == "__main__":
     #env.seed(seed)
     # Set the device
 
-    ep_length, disc_rewards, tot_rewards, V0 = agent.train(env, 1000)
+    ep_length, disc_rewards, tot_rewards, V0 = agent.train(env, 2000)
     agent.save("./dqn_agent.pth")
     print("Training done")
