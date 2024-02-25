@@ -1,6 +1,7 @@
 from gymnasium.wrappers import TimeLimit
 from env_hiv import HIVPatient
 import torch
+import tqdm 
 import random
 import numpy as np
 from copy import deepcopy
@@ -142,6 +143,7 @@ class DQN_Agent:
         state, _ = env.reset()
         epsilon = self.epsilon_max
         step = 0
+        best_return = 0
         while episode < max_episode:
             # update epsilon
             if step > self.epsilon_delay:
@@ -189,6 +191,9 @@ class DQN_Agent:
                           ", MC disc ", '{:6.0f}'.format(MC_dr),
                           ", V0 ", '{:6.0f}'.format(V0),
                           sep='')
+                    if MC_tr > best_return:
+                        best_return = MC_tr
+                        self.save(self.save_path)
                 else:
                     episode_return.append(episode_cum_reward)
                     print("Episode ", '{:2d}'.format(episode), 
@@ -202,8 +207,6 @@ class DQN_Agent:
                 episode_cum_reward = 0
             else:
                 state = next_state
-            if episode % self.save_every == 0:
-                self.save(self.save_path)
         return episode_return, MC_avg_discounted_reward, MC_avg_total_reward, V_init_state
     def act(self, state):
         return greedy_action(self.model, state)
@@ -232,10 +235,10 @@ config = {'nb_actions': nb_actions,
         'batch_size': 1024,
         'gradient_steps': 2,
         'update_target_strategy': 'replace', # or 'ema'
-        'update_target_freq': 500,
+        'update_target_freq': 600,
         'update_target_tau': 0.005,
         'criterion': torch.nn.SmoothL1Loss(),
-        'monitoring_nb_trials': 10, 
+        'monitoring_nb_trials': 50, 
         'monitor_every': 50, 
         'save_path': './dqn_agent.pth',
         'save_every': 50}
@@ -255,6 +258,19 @@ class ProjectAgent:
         path = os.getcwd() + "/src/dqn_agent.pth"
         self.dqn_agent.load(path)
 
+def fill_buffer(env, agent, buffer_size):
+    state, _ = env.reset()
+    progress_bar = tqdm.tqdm(total=buffer_size, desc="Filling the replay buffer")
+    for _ in range(buffer_size):
+        action = agent.act(state)
+        next_state, reward, done, trunc, _ = env.step(action)
+        agent.memory.append(state, action, reward, next_state, done)
+        if done or trunc:
+            state, _ = env.reset()
+        else:
+            state = next_state
+        progress_bar.update(1)
+    progress_bar.close()
 
 if __name__ == "__main__":
     # Set the seed
@@ -266,6 +282,9 @@ if __name__ == "__main__":
     torch.backends.cudnn.benchmark = False
     #env.seed(seed)
     # Set the device
+
+    # Fill the buffer
+    fill_buffer(env, agent, 8000)
 
     ep_length, disc_rewards, tot_rewards, V0 = agent.train(env, 2000)
     agent.save("./dqn_agent.pth")
