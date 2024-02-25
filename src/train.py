@@ -169,7 +169,7 @@ class DQN_Agent:
                 model_state_dict = self.model.state_dict()
                 tau = self.update_target_tau
                 for key in model_state_dict:
-                    target_state_dict[key] = tau*model_state_dict + (1-tau)*target_state_dict
+                    target_state_dict[key] = tau*model_state_dict[key] + (1-tau)*target_state_dict[key]
                 self.target_model.load_state_dict(target_state_dict)
             # next transition
             step += 1
@@ -194,6 +194,7 @@ class DQN_Agent:
                     if MC_tr > best_return:
                         best_return = MC_tr
                         self.save(self.save_path)
+                        print("Best return is updated to ", best_return)
                 else:
                     episode_return.append(episode_cum_reward)
                     print("Episode ", '{:2d}'.format(episode), 
@@ -234,9 +235,9 @@ config = {'nb_actions': nb_actions,
         'epsilon_delay_decay': 400,
         'batch_size': 1024,
         'gradient_steps': 2,
-        'update_target_strategy': 'replace', # or 'ema'
+        'update_target_strategy': 'ema', # or 'replace'
         'update_target_freq': 600,
-        'update_target_tau': 0.005,
+        'update_target_tau': 0.001,
         'criterion': torch.nn.SmoothL1Loss(),
         'monitoring_nb_trials': 50, 
         'monitor_every': 50, 
@@ -286,6 +287,6 @@ if __name__ == "__main__":
     # Fill the buffer
     fill_buffer(env, agent, 8000)
 
-    ep_length, disc_rewards, tot_rewards, V0 = agent.train(env, 2000)
+    ep_length, disc_rewards, tot_rewards, V0 = agent.train(env, 4000)
     agent.save("./dqn_agent.pth")
     print("Training done")
